@@ -1,0 +1,24 @@
+FROM alpine:latest as build
+
+RUN apk --no-cache add ca-certificates py-pygments py-setuptools wget jq go git g++
+
+COPY host.sh /bin
+
+RUN git clone https://github.com/gohugoio/hugo.git
+RUN cd hugo && go install --tags extended
+
+# -------------------------------------------------------
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates libstdc++
+
+COPY --from=build /root/go/bin/hugo /usr/local/bin/hugo
+
+RUN chmod +x /usr/local/bin/hugo && \
+    mkdir /data
+
+WORKDIR /data
+
+ENTRYPOINT ["/usr/local/bin/hugo"]
+CMD [""]
